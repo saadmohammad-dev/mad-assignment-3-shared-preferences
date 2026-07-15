@@ -1,30 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:counter_app/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:counter_app/main.dart'; // <-- apne project ka naam yahan daalna
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Theme loads and dropdown changes color', (WidgetTester tester) async {
+    // shared_preferences ko test mode me set karna zaroori hai
+    SharedPreferences.setMockInitialValues({'theme_color': 'Red'});
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // runApp me wahi widget dalo jo main.dart me hai
+    await tester.pumpWidget(const ColorThemeApp(initialColorName: 'Red'));
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // 1. Check karo ke AppBar ka title aya ya nahi
+    expect(find.text('Color Theme Selector'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 2. Check karo ke current theme button pe Red likha hai
+    expect(find.text('Current Theme: Red'), findsOneWidget);
+
+    // 3. Dropdown ko tap karo aur Green select karo
+    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.pumpAndSettle(); // dropdown khulne ka wait
+
+    await tester.tap(find.text('Green').last);
+    await tester.pumpAndSettle(); // UI update hone ka wait
+
+    // 4. Check karo ke theme Green ho gaya
+    expect(find.text('Current Theme: Green'), findsOneWidget);
   });
 }
